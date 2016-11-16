@@ -1,0 +1,293 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+DumpTables
+</name>
+</assembly>
+<members>
+<member name="T:DumpTables.My.Resources.Resources">
+<summary>
+  Clase de recurso fuertemente tipado, para buscar cadenas traducidas, etc.
+</summary>
+</member>
+<member name="P:DumpTables.My.Resources.Resources.ResourceManager">
+<summary>
+  Devuelve la instancia de ResourceManager almacenada en caché utilizada por esta clase.
+</summary>
+</member>
+<member name="P:DumpTables.My.Resources.Resources.Culture">
+<summary>
+  Reemplaza la propiedad CurrentUICulture del subproceso actual para todas las
+  búsquedas de recursos mediante esta clase de recurso fuertemente tipado.
+</summary>
+</member>
+<member name="T:DumpTables.ConsoleApp">
+ <summary>
+     MODULO PARA GESTIONAR LA IMPRESION DE MENSAJES DE LA INTERFAZ PARA LINEA DE COMANDOS
+ </summary>
+</member>
+<member name="M:DumpTables.ConsoleApp.PrintHorizontalLine">
+ <summary>
+     Imprime una linea de guiones horizontal a lo largo de todo el ancho de pantalla 
+ </summary>
+</member>
+<member name="M:DumpTables.ConsoleApp.HandleTitle">
+ <summary>
+     Gestiona el titulo de la ventana, las dimensiones, posicion inicial, e imprime titulo
+ </summary>
+</member>
+<member name="M:DumpTables.ConsoleApp.HandleArgumentData">
+ <summary>
+     Imprime y valida el valor de los argumentos de entrada pasados por linea de comandos a la aplicacion
+ </summary>
+</member>
+<member name="M:DumpTables.ConsoleApp.HandleProcessing">
+ <summary>
+     Imprime el inicio de la seccion de procesamiento principal
+ </summary>
+</member>
+<member name="M:DumpTables.ConsoleApp.HandleEnding">
+ <summary>
+     Imprime la seccion de finalizacion, emite un sonido y espera para salir
+ </summary>
+</member>
+<member name="T:DumpTables.TableDumper">
+ <summary>
+     MODULO PRINCIPAL PARA EXTRAER LOS DATOS DEL DOCUMENTO WORD FUENTE CON LA ESPECIFICACION DE LA ONTOLOGIA
+ </summary>
+</member>
+<member name="M:DumpTables.TableDumper.Main">
+ <summary>
+     Metodo principal de la aplicacion.
+     Se debe llamar desde linea de comandos con los argumentos separados por espacios:
+         (1) Ruta del fichero Word a procesar.
+         (2) Nombre de la Ontologia.
+         (3) Indice de las tablas a procesar.
+         (4) "True" | "False" para que se procesen las notas a pie. 
+         (5) Ruta de salida de los ficheros procesados.
+ </summary>
+</member>
+<member name="T:DumpTables.OntologyTables">
+ <summary>
+     Clase OntologyTables
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="M:DumpTables.OntologyTables.#ctor(System.String)">
+ <summary>
+     Constructor, hay que pasarle el nombre de la Ontologia como parametro
+ </summary>
+ <param name="Name">
+     String, nombre de la Ontologia.
+ </param>
+</member>
+<member name="M:DumpTables.OntologyTables.SelectTables(Microsoft.Office.Interop.Word.Document@,System.Int32[])">
+ <summary>
+     Se filtran las tablas no válidas que estén en el rango de tablas seleccionado 
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="M:DumpTables.OntologyTables.ReadTables(Microsoft.Office.Interop.Word.Document@,System.Int32[])">
+ <summary>
+     Submetodo para leer el contenido de las tablas de un documento fuente Word.
+ </summary>
+ <param name="objDoc">
+     Referencia al objeto del documento Word origen.
+ </param>
+ <param name="TablesIndex">
+     Indices de las tablas del documento a extraer separadas por comas.
+      0 -> Todas las tablas del documento.
+     -1 -> Ninguna tabla del documento.
+ </param>
+ <remarks></remarks>
+</member>
+<member name="M:DumpTables.OntologyTables.ReadFootNotes(Microsoft.Office.Interop.Word.Document@)">
+ <summary>
+     Submetodo para leer las notas a pie de un documento fuente Word junto con sus referencias.
+ </summary>
+ <param name="objDoc">
+     Microsoft.Office.Interop.Word.Document
+ </param>
+</member>
+<member name="M:DumpTables.OntologyTables.ExportFile(System.String)">
+ <summary>
+     Submetodo para exportar los datos extraidos y transformados a ficheros de texto.
+     Se creara un fichero por cada tabla y otro para todas las notas a pie.
+ </summary>
+ <param name="OutPath">
+     String, ruta de salida de los ficheros.
+ </param>
+</member>
+<member name="T:DumpTables.MyWordTable">
+ <summary>
+     Clase WordTable para procesado de Tablas de un documento Word
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="M:DumpTables.MyWordTable.#ctor">
+ <summary>
+     Constructor 
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="M:DumpTables.MyWordTable.ManageDataSize(System.Int32,System.Boolean)">
+ <summary>
+     Asigna tamanyo y memoria para los campos Cabecera y Datos 
+ </summary>
+ <param name="DataSize">
+     Tamanyo de los datos de la tabla.
+ </param>
+ <param name="HasHeader">
+     [Opcional] Para determinar si se debe reservar tamanyo para la cabecera de la tabla, por defecto Si (True).
+ </param>
+ <remarks></remarks>
+</member>
+<member name="M:DumpTables.MyWordTable.HasHeader(Microsoft.Office.Interop.Word.Table@)">
+ <summary>
+     Funcion que devuelve Verdadero si la tabla pasada como argumento tiene cabecera.
+ </summary>
+ <param name="WordTable">
+     Microsoft.Office.Interop.Word.Table
+ </param>
+ <returns></returns>
+     Boolean
+ <remarks></remarks>
+</member>
+<member name="M:DumpTables.MyWordTable.SetRepeatedRowValues">
+ <summary>
+     Asigna valor para el campo RepeatedRowValues.
+ </summary>
+ <remarks>
+     RepeatedRowValues: Sera Verdadero si para una misma fila de la tabla se repite alguna 
+                        celda en diferentes columnas. Usado en getLayOut.           
+ </remarks>
+</member>
+<member name="M:DumpTables.MyWordTable.GetLayOut(Microsoft.Office.Interop.Word.Table@)">
+ <summary>
+     Obtiene la distribucion de las celdas (ya que pueden ser irregulares) sobre el espacio  
+     que forman las filas y columnas de las tablas y se la asigna al campo Estuctura.     
+ </summary>
+ <param name="WordTable">
+     Microsoft.Office.Interop.Word.Table
+ </param>
+ <remarks></remarks>
+</member>
+<member name="M:DumpTables.MyWordTable.ReadCells(Microsoft.Office.Interop.Word.Table@)">
+ <summary>
+     Lee las celdas de la tabla (como MyWordTableCell) y las asigna al campo Cells.
+ </summary>
+ <param name="WordTable">
+     Microsoft.Office.Interop.Word.Table
+ </param>
+ <remarks>
+     Recorre la tabla segun la estructura Xml de la misma en el fichero Word.
+ </remarks>
+</member>
+<member name="M:DumpTables.MyWordTable.ReadTable(Microsoft.Office.Interop.Word.Table@)">
+ <summary>
+     Lee la tabla llamando a las funciones anetiores.
+     Asigna valor a los campos Cabecera (si existe) y Datos en el formato de salida.
+ </summary>
+ <param name="WordTable">
+     Microsoft.Office.Interop.Word.Table
+ </param>
+ <remarks></remarks>
+</member>
+<member name="T:DumpTables.MyWordTableCell">
+ <summary>
+     Clase WordTableCell, celda de una WordTable
+ </summary>
+ <remarks>
+     Se corresponde con cada celda de una tabla de un documento fuente Word, donde puede haber celdas de dimensiones mayores que 1.
+ </remarks>
+</member>
+<member name="M:DumpTables.MyWordTableCell.ContainsSubscript(Microsoft.Office.Interop.Word.Cell@)">
+ <summary>
+     Funcion que devuelve Verdadero si el contenido de la celda Word que se le pasa es un texto con subindices, 
+     pues este debe ser codificado de forma espcial.
+ </summary>
+ <param name="WordTableCell">
+     Microsoft.Office.Interop.Word.Cell
+ </param>
+ <returns>
+     Se usa en MyWordTable.leerCeldas(Table)
+ </returns>
+</member>
+<member name="M:DumpTables.MyWordTableCell.DisambiguateSubscript(Microsoft.Office.Interop.Word.Cell@)">
+ <summary>
+     Funcion para codificar de forma especial la parte de una cadena que deba ser representada o interpretada como un subindice.
+     Elimina asi la ambiguedad posible al codificar todo al mismo nivel, con literales que pudiesen existir, por ejemplo:
+         - Ant(i), parte subindice entre parentesis se codificaria sin desambiguar como Anti, que puede coincidir con el 
+           prefijo "anti" (aunque aqui la "i" es numero romano) y que se codificaria como Ant_csub1.
+ </summary>
+ <param name="WordTableCell">
+     Microsoft.Office.Interop.Word.Cell
+ </param>
+</member>
+<member name="M:DumpTables.MyWordTableCell.Roman2Num(System.String)">
+ <summary>
+     Convierte una representacion de numero romano a numero arabigo.
+ </summary>
+ <param name="Roman">
+     String, representacion de un numero romano.
+ </param>
+ <returns></returns>
+</member>
+<member name="M:DumpTables.Util.Seq(System.Int32,System.Int32)">
+ <summary>
+     Devuelve un array de enteros con la sucesion de numeros desde LowBound hasta UpBound, 
+     siendo (LowBound menor o igual que UpBound).
+ </summary>
+ <param name="LowBound">
+     Integer, limite inferior.
+ </param>
+ <param name="UpBound">
+     Integer, limite superior.
+ </param>
+ <returns>
+     Integer() 
+ </returns>
+</member>
+<member name="M:DumpTables.Util.FindMin(System.Int32[])">
+ <summary>
+     Funcion para devolver el minimo entero de un array.
+ </summary>
+ <param name="args">
+     Integer, array de enteros a encontrar el menor.
+ </param>
+ <returns>
+     Integer
+ </returns>
+</member>
+<member name="M:DumpTables.Util.FindMax(System.Int32[])">
+ <summary>
+  Funcion para devolver el maximo entero de un array.
+ </summary>
+ <param name="args">
+     Integer, array de enteros a encontrar el mayor.
+ </param>
+ <returns>
+     Integer
+ </returns>
+</member>
+<member name="M:DumpTables.Util.GetParamFrom3rdArg(System.String)">
+ <summary>
+     Funcion para obtener el valor del parametro RangoTablas (indices de las tablas que se 
+     porcesaran de un documento Word).
+     
+     Es el tercer argumento pasado por linea de comandos en la llamada a la aplicacion. 
+ </summary>
+ <param name="ThirdArg"></param>
+ <returns>
+     Integer(),
+     Si ThirdArg = "notab"; RangoTablas = {-1}
+     Si ThirdArg contiene un intervalo[a,a]; RangoTablas = {a}
+     Si ThirdArg contiene un intervalo[a,b]; RangoTablas = {a ... b}
+     Si ThirdArg contiene una lista de valores (x,y,z,...); RangoTablas = {x,y,z,...}
+     
+     Nothing en caso contrario.
+ </returns>
+</member>
+</members>
+</doc>

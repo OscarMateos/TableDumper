@@ -1,0 +1,12 @@
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\bin\Release\DumpTables.exe.config
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\bin\Release\DumpTables.exe
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\bin\Release\DumpTables.pdb
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\bin\Release\DumpTables.xml
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\bin\Release\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\bin\Release\es\Microsoft.VisualStudio.QualityTools.UnitTestFramework.resources.dll
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\obj\Release\DumpSourceTables.vbprojResolveAssemblyReference.cache
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\obj\Release\DumpTables.Resources.resources
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\obj\Release\DumpSourceTables.vbproj.GenerateResource.Cache
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\obj\Release\DumpTables.exe
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\obj\Release\DumpTables.xml
+C:\ExtraccionTablas\DumpSourceTables\DumpSourceTables\obj\Release\DumpTables.pdb

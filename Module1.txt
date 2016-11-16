@@ -1,0 +1,314 @@
+﻿Imports Microsoft.Office.Interop.Word
+Imports System.Collections
+Imports System.IO
+Imports System.Text
+Imports System.Text.RegularExpressions
+
+''' <summary>
+''' Clase tPoint para las coordenadas de las celdas de las tablas Word
+''' </summary>
+''' <remarks></remarks>
+Public Class tPoint
+    Private dimX, dimY As Integer
+
+    Public Property X As Integer
+        Get
+            Return dimX
+        End Get
+        Set(value As Integer)
+            dimX = value
+        End Set
+    End Property
+
+    Public Property Y As Integer
+        Get
+            Return dimY
+        End Get
+        Set(value As Integer)
+            dimY = value
+        End Set
+    End Property
+
+    Public Sub New(_x As Integer, _y As Integer)
+        Me.X = _x
+        Me.Y = _y
+    End Sub
+
+    'Public Function IsEqual(_x As Integer, _y As Integer) As Boolean
+    '    If Me.X = _x And Me.Y = _y Then
+    '        Return True
+    '    Else
+    '        Return False
+    '    End If
+    'End Function
+End Class
+
+''' <summary>
+''' Clase Tabla
+''' </summary>
+''' <remarks></remarks>
+Public Class Tabla
+    Property Nombre As String
+    Property Estructura As tPoint(,)
+    Property Cabecera As ArrayList
+    Property Datos As ArrayList()
+
+    Public Sub New()
+        Me.Cabecera = New ArrayList
+    End Sub
+
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="tamano"></param>
+    ''' <remarks></remarks>
+    Private Sub asignarTamano(ByVal tamano As Integer)
+        If tamano = 0 Then
+            Exit Sub
+        End If
+
+        ReDim Me.Datos(tamano - 1)
+
+        For i = 0 To tamano - 1
+            Me.Datos(i) = New ArrayList
+        Next
+    End Sub
+
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="objTable"></param>
+    ''' <remarks></remarks>
+    Private Sub obtenerEstructura(ByRef objTable As Microsoft.Office.Interop.Word.Table)
+        Dim i As Long, j As Long
+        Dim C As Cell
+
+        With objTable
+            'Array con la estructura de la tabla
+            ReDim Me.Estructura(0 To .Rows.Count - 1, 0 To .Columns.Count - 1)
+            C = .Cell(1, 1)
+
+            'Primera pasada: detectar celdas combinadas
+            Do While Not C Is Nothing
+                'Guarda los índices de las celdas visitables
+                Me.Estructura(C.RowIndex - 1, C.ColumnIndex - 1) = New tPoint(C.RowIndex, C.ColumnIndex)
+                C = C.Next
+            Loop
+
+            'Segunda pasada: indicar los índices de las celdas combinadas
+            For i = 0 To UBound(Me.Estructura)
+                For j = 0 To UBound(Me.Estructura, 2)
+                    If IsNothing(Me.Estructura(i, j)) Then
+                        Me.Estructura(i, j) = New tPoint(Me.Estructura(i - 1, j).X, Me.Estructura(i - 1, j).Y)
+                    End If
+                Next
+            Next
+        End With
+    End Sub
+
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="objTable"></param>
+    ''' <remarks></remarks>
+    Public Sub leerTabla(ByRef objTable As Microsoft.Office.Interop.Word.Table)
+        Dim numFilas, numColumnas As Integer
+        Dim contenidoCelda As String
+
+        'Obtenemos el nombre de la tabla
+        Dim pNombre As String = objTable.Cell(1, 1).Range.Previous(WdUnits.wdParagraph, 1).Text
+        Me.Nombre = Trim((Right(pNombre, pNombre.Count - InStr(pNombre, ":"))))
+
+        'Obtenemos la estructura de la tabla
+        Me.obtenerEstructura(objTable)
+
+        'Leemos los datos de la tabla
+        With objTable
+            Dim valor As String = Nothing
+
+            'Asignar tamaño para los datos
+            numFilas = .Rows.Count
+            numColumnas = .Columns.Count
+
+            Me.asignarTamano(numFilas - 1)
+
+            'Recorrer las filas de la tabla
+            For i = 0 To numFilas - 1
+                'Recuperar el contenido de la celda teniendo en cuenta la estructura de la tabla
+                For j = 0 To numColumnas - 1
+                    contenidoCelda = Left$(.Cell(Me.Estructura(i, j).X, Me.Estructura(i, j).Y).Range.Text, Len(.Cell(Me.Estructura(i, j).X, Me.Estructura(i, j).Y).Range.Text) - 2)
+
+                    'Primera fila: Cabecera
+                    'Resto: Datos
+                    If i = 0 Then
+                        Me.Cabecera.Add(contenidoCelda.Trim(" "))
+                    Else
+                        Me.Datos(i - 1).Add(contenidoCelda.Trim(" "))
+                    End If
+                Next
+            Next
+        End With
+    End Sub
+End Class
+
+''' <summary>
+''' Clase Ontologia
+''' </summary>
+''' <remarks></remarks>
+Public Class Ontologia
+    Property Nombre As String
+    Property IndiceTablas As Integer()
+    Property TablasOntologia As Tabla()
+
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <remarks></remarks>
+    Private Sub seleccionarTablas(ByRef objDoc As Microsoft.Office.Interop.Word.Document, ByVal ParamArray RangoTablas() As Integer)
+        Dim SeleccionTablas As ArrayList = New ArrayList(RangoTablas)
+
+        With objDoc
+            Dim LimiteSup As Integer = SeleccionTablas.Count - 1
+
+            For i = 0 To LimiteSup
+                If i > LimiteSup Or i < 0 Or LimiteSup < 0 Then
+                    Exit For
+                End If
+
+                'Si son tablas con horientacion vertical (tablas de axiomas) las omitimos
+                Dim Orientacion As WdTextOrientation = .Tables(SeleccionTablas(i)).Range.Orientation
+
+                'Si son tablas de imágenes o gráficos las omitimos
+                Dim PrimeraCabecera As String = .Tables(SeleccionTablas(i)).Cell(1, 1).Range.Text
+
+                If Orientacion = WdTextOrientation.wdTextOrientationUpward Or PrimeraCabecera = "/" & vbCr & "" Then
+                    SeleccionTablas.Remove(SeleccionTablas(i))
+                    i = i - 1
+                    LimiteSup = LimiteSup - 1
+                End If
+            Next
+        End With
+
+        'Se guardan los indices de las tablas omitiendo las de axiomas
+        Me.IndiceTablas = CType(SeleccionTablas.ToArray(GetType(Integer)), Integer())
+    End Sub
+
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="objDoc"></param>
+    ''' <param name="Nombre"></param>
+    ''' <param name="RangoTablas"></param>
+    ''' <remarks></remarks>
+    Public Sub leerTablas(ByRef objDoc As Microsoft.Office.Interop.Word.Document, ByVal Nombre As String, ByVal ParamArray RangoTablas() As Integer)
+        Me.Nombre = Nombre
+        Me.seleccionarTablas(objDoc, RangoTablas)
+        ReDim TablasOntologia(Me.IndiceTablas.Count - 1)
+
+        For i = 0 To UBound(IndiceTablas)
+            Dim Tabla As New Tabla
+            Tabla.leerTabla(objDoc.Tables(IndiceTablas(i)))
+
+            'Inferir Columna omitida por espacio para tablas con misma estructura 
+            If i > 0 Then
+                If Tabla.Cabecera.Count = TablasOntologia(i - 1).Cabecera.Count - 1 Then
+                    Dim inferirColumna As Boolean = True
+                    'Esto habria que verlo para los 1-2 e i-3 y q las cabeceras fueran iguales entre ellos hasta el "-"
+                    For j = 0 To Tabla.Cabecera.Count - 1
+                        If Tabla.Cabecera(j) <> TablasOntologia(i - 1).Cabecera(j) Then
+                            inferirColumna = False
+                        End If
+                    Next
+
+                    If inferirColumna Then
+                        'Inferir nombre de columna de tabla anterior
+                        Tabla.Cabecera.Add(TablasOntologia(i - 1).Cabecera(Tabla.Cabecera.Count))
+
+                        'Inferir columna del nombre de la tabla para los datos
+                        For j = 0 To UBound(Tabla.Datos)
+                            Tabla.Datos(j).Add(Tabla.Nombre)
+                        Next
+                    End If
+                End If
+            End If
+
+            TablasOntologia(i) = Tabla
+        Next
+
+        objDoc.Close()
+    End Sub
+
+    Public Async Sub ExportCSV(ByVal OutPath As String)
+        If Not Dir(OutPath, vbDirectory) = vbNullString Then
+            My.Computer.FileSystem.CreateDirectory(OutPath & "\" & Me.Nombre)
+
+            For Each tabla As Tabla In Me.TablasOntologia
+                Dim sb As StringBuilder = New StringBuilder()
+                Dim rgx As New Regex("\s*")
+
+                sb.AppendLine(tabla.Nombre.Trim(" ", vbCr))
+                For Each valor As String In tabla.Cabecera
+                    ''Si endsWith vbCr trimear del final - Comentarios
+                    sb.Append(valor.Trim(" ", vbCr) & "~~")
+                Next
+                sb.AppendLine()
+                For Each dato As ArrayList In tabla.Datos
+                    For Each valor As String In dato
+                        If Not valor.StartsWith(vbCr) And Not valor.EndsWith(vbCr) Then
+                            valor = valor.Replace(vbCr, "%")
+                        End If
+
+                        sb.Append(rgx.Replace(valor, "%").Trim(" ", vbCr) & "~~")
+                    Next
+                    sb.AppendLine()
+                Next
+
+                Dim filename As String = OutPath & "\" & Me.Nombre & "\" & tabla.Nombre.Trim(" ", vbCr) & ".txt"
+                Using outfile As New System.IO.StreamWriter(filename, True)
+                    Await outfile.WriteAsync(sb.ToString())
+                End Using
+            Next
+        End If
+    End Sub
+End Class
+
+Module Module1
+    Public Const DocPath = "C:\Users\bc.oscar\Downloads\ProyectosTrabajoMaster\OntoTag - Ph. D. dissertation (2012-09-03).docx"
+
+    Function Seq(ByVal LowBound As Integer, ByVal UpBound As Integer) As Integer()
+        Dim Size As Integer = UpBound - LowBound
+        Dim Sequence(Size) As Integer
+
+        For i = 0 To Size
+            Sequence(i) = LowBound + i
+        Next
+
+        Return Sequence
+    End Function
+
+    Sub Main()
+        Dim objWord As Application
+        Dim objDoc As Document
+        Dim m As Integer = 0
+
+        'Abrir Word
+        objWord = CreateObject("Word.Application")
+
+        With objWord
+            'Abrir documento
+            objDoc = .Documents.Open(DocPath)
+
+            'Dim OIO As New Ontologia
+            'OIO.leerTablas(objDoc, "The OntoTag Integration Ontology (OIO)", Seq(15, 31))
+            'OIO.ExportCSV("C:\Oth")
+
+            Dim LUO As New Ontologia
+            LUO.leerTablas(objDoc, "The Linguistic Units Ontology (OIO)", Seq(32, 70))
+            LUO.ExportCSV("D:\Oth")
+
+            objDoc = Nothing
+            .Quit()
+        End With
+        objWord = Nothing
+    End Sub
+End Module
